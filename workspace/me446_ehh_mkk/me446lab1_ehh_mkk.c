@@ -35,6 +35,10 @@ float printtheta1motor = 0;
 float printtheta2motor = 0;
 float printtheta3motor = 0;
 
+float x_loc = 0;
+float y_loc = 0;
+float z_loc = 0;
+
 // Assign these float to the values you would like to plot in Simulink
 float Simulink_PlotVar1 = 0;
 float Simulink_PlotVar2 = 0;
@@ -75,6 +79,10 @@ void lab(float theta1motor,float theta2motor,float theta3motor,float *tau1,float
     printtheta2motor = theta2motor;
     printtheta3motor = theta3motor;
 
+    x_loc = (127.0*cos(theta1motor)*(cos(theta3motor) + sin(theta2motor)))/500.0;
+    y_loc = (127.0*sin(theta1motor)*(cos(theta3motor) + sin(theta2motor)))/500.0;
+    z_loc = (127.0*cos(theta2motor))/500.0 - (127.0*sin(theta3motor))/500.0 + 127.0/500.0;
+
     Simulink_PlotVar1 = theta1motor;
     Simulink_PlotVar2 = theta2motor;
     Simulink_PlotVar3 = theta3motor;
@@ -84,6 +92,7 @@ void lab(float theta1motor,float theta2motor,float theta3motor,float *tau1,float
 }
 
 void printing(void){
-    serial_printf(&SerialA, "%.2f %.2f,%.2f   \n\r",printtheta1motor*180/PI,printtheta2motor*180/PI,printtheta3motor*180/PI);
+    serial_printf(&SerialA, "%.2f %.2f,%.2f,%.2f,%.2f,%.2f'   \n\r",printtheta1motor*180/PI,printtheta2motor*180/PI,printtheta3motor*180/PI,x_loc,y_loc,z_loc);
+    //serial_printf(&SerialA, "%.2f %.2f,%.2f   \n\r",x_loc, y_loc, z_loc);
 }
 
