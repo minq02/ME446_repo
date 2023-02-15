@@ -61,8 +61,7 @@ float Simulink_PlotVar4 = 0;
 
 
 // This function is called every 1 ms
-void lab(float theta1motor,float theta2motor,float theta3motor,float *tau1,float *tau2,float *tau3, int error) {
-
+void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, float *tau2, float *tau3, int error) {
 
     *tau1 = 0;
     *tau2 = 0;
