@@ -6,9 +6,9 @@
  *
  * Code generation for model "simulink5ms_plotAndGains".
  *
- * Model version              : 9.1
+ * Model version              : 9.2
  * Simulink Coder version : 9.7 (R2022a) 13-Nov-2021
- * C source code generated on : Wed Jan 25 13:31:41 2023
+ * C source code generated on : Wed Feb 22 13:24:57 2023
  *
  * Target selection: sldrt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -88,6 +88,21 @@ P_simulink5ms_plotAndGains_T simulink5ms_plotAndGains_P = {
 
   /* Expression: 1
    * Referenced by: '<Root>/plot4'
+   */
+  1.0,
+
+  /* Expression: 1
+   * Referenced by: '<Root>/error1'
+   */
+  1.0,
+
+  /* Expression: 1
+   * Referenced by: '<Root>/error2'
+   */
+  1.0,
+
+  /* Expression: 1
+   * Referenced by: '<Root>/error3'
    */
   1.0,
 

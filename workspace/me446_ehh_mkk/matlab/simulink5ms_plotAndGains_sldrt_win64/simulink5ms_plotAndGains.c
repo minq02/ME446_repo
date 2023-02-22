@@ -6,9 +6,9 @@
  *
  * Code generation for model "simulink5ms_plotAndGains".
  *
- * Model version              : 9.1
+ * Model version              : 9.2
  * Simulink Coder version : 9.7 (R2022a) 13-Nov-2021
- * C source code generated on : Wed Jan 25 13:31:41 2023
+ * C source code generated on : Wed Feb 22 13:24:57 2023
  *
  * Target selection: sldrt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -128,13 +128,106 @@ void simulink5ms_plotAndGains_output(void)
   /* Outport: '<Root>/Out4' */
   simulink5ms_plotAndGains_Y.Out4 = simulink5ms_plotAndGains_B.plot4;
 
+  /* Sum: '<Root>/Sum' */
+  simulink5ms_plotAndGains_B.Sum = simulink5ms_plotAndGains_B.plot1 -
+    simulink5ms_plotAndGains_B.plot4;
+
+  /* Gain: '<Root>/error1' */
+  simulink5ms_plotAndGains_B.error1 = simulink5ms_plotAndGains_P.error1_Gain *
+    simulink5ms_plotAndGains_B.Sum;
+
+  /* Outport: '<Root>/Output' */
+  simulink5ms_plotAndGains_Y.Output = simulink5ms_plotAndGains_B.error1;
+
+  /* Sum: '<Root>/Sum1' */
+  simulink5ms_plotAndGains_B.Sum1 = simulink5ms_plotAndGains_B.plot2 -
+    simulink5ms_plotAndGains_B.plot4;
+
+  /* Gain: '<Root>/error2' */
+  simulink5ms_plotAndGains_B.error2 = simulink5ms_plotAndGains_P.error2_Gain *
+    simulink5ms_plotAndGains_B.Sum1;
+
+  /* Outport: '<Root>/Output1' */
+  simulink5ms_plotAndGains_Y.Output1 = simulink5ms_plotAndGains_B.error2;
+
+  /* Sum: '<Root>/Sum2' */
+  simulink5ms_plotAndGains_B.Sum2 = simulink5ms_plotAndGains_B.plot3 -
+    simulink5ms_plotAndGains_B.plot4;
+
+  /* Gain: '<Root>/error3' */
+  simulink5ms_plotAndGains_B.error3 = simulink5ms_plotAndGains_P.error3_Gain *
+    simulink5ms_plotAndGains_B.Sum2;
+
+  /* Outport: '<Root>/Output2' */
+  simulink5ms_plotAndGains_Y.Output2 = simulink5ms_plotAndGains_B.error3;
+
+  /* ToAsyncQueueBlock generated from: '<Root>/Sum1' */
+  {
+    {
+      double time = simulink5ms_plotAndGains_M->Timing.t[0];
+      void *pData = (void *)&simulink5ms_plotAndGains_B.Sum1;
+      int32_T size = 1*sizeof(real_T);
+      sendToAsyncQueueTgtAppSvc(3355451920U, time, pData, size);
+    }
+  }
+
+  /* ToAsyncQueueBlock generated from: '<Root>/Sum2' */
+  {
+    {
+      double time = simulink5ms_plotAndGains_M->Timing.t[0];
+      void *pData = (void *)&simulink5ms_plotAndGains_B.Sum2;
+      int32_T size = 1*sizeof(real_T);
+      sendToAsyncQueueTgtAppSvc(515171872U, time, pData, size);
+    }
+  }
+
+  /* ToAsyncQueueBlock generated from: '<Root>/Sum' */
+  {
+    {
+      double time = simulink5ms_plotAndGains_M->Timing.t[0];
+      void *pData = (void *)&simulink5ms_plotAndGains_B.Sum;
+      int32_T size = 1*sizeof(real_T);
+      sendToAsyncQueueTgtAppSvc(2308916951U, time, pData, size);
+    }
+  }
+
+  /* ToAsyncQueueBlock generated from: '<Root>/error1' */
+  {
+    {
+      double time = simulink5ms_plotAndGains_M->Timing.t[0];
+      void *pData = (void *)&simulink5ms_plotAndGains_B.error1;
+      int32_T size = 1*sizeof(real_T);
+      sendToAsyncQueueTgtAppSvc(3074883417U, time, pData, size);
+    }
+  }
+
+  /* ToAsyncQueueBlock generated from: '<Root>/error2' */
+  {
+    {
+      double time = simulink5ms_plotAndGains_M->Timing.t[0];
+      void *pData = (void *)&simulink5ms_plotAndGains_B.error2;
+      int32_T size = 1*sizeof(real_T);
+      sendToAsyncQueueTgtAppSvc(2096597086U, time, pData, size);
+    }
+  }
+
+  /* ToAsyncQueueBlock generated from: '<Root>/error3' */
+  {
+    {
+      double time = simulink5ms_plotAndGains_M->Timing.t[0];
+      void *pData = (void *)&simulink5ms_plotAndGains_B.error3;
+      int32_T size = 1*sizeof(real_T);
+      sendToAsyncQueueTgtAppSvc(3746032905U, time, pData, size);
+    }
+  }
+
   /* ToAsyncQueueBlock generated from: '<Root>/plot1' */
   {
     {
       double time = simulink5ms_plotAndGains_M->Timing.t[0];
       void *pData = (void *)&simulink5ms_plotAndGains_B.plot1;
       int32_T size = 1*sizeof(real_T);
-      sendToAsyncQueueTgtAppSvc(1776994174U, time, pData, size);
+      sendToAsyncQueueTgtAppSvc(1028489906U, time, pData, size);
     }
   }
 
@@ -144,7 +237,7 @@ void simulink5ms_plotAndGains_output(void)
       double time = simulink5ms_plotAndGains_M->Timing.t[0];
       void *pData = (void *)&simulink5ms_plotAndGains_B.plot2;
       int32_T size = 1*sizeof(real_T);
-      sendToAsyncQueueTgtAppSvc(690304230U, time, pData, size);
+      sendToAsyncQueueTgtAppSvc(3076033062U, time, pData, size);
     }
   }
 
@@ -154,7 +247,7 @@ void simulink5ms_plotAndGains_output(void)
       double time = simulink5ms_plotAndGains_M->Timing.t[0];
       void *pData = (void *)&simulink5ms_plotAndGains_B.plot3;
       int32_T size = 1*sizeof(real_T);
-      sendToAsyncQueueTgtAppSvc(2323268356U, time, pData, size);
+      sendToAsyncQueueTgtAppSvc(780070766U, time, pData, size);
     }
   }
 
@@ -164,7 +257,7 @@ void simulink5ms_plotAndGains_output(void)
       double time = simulink5ms_plotAndGains_M->Timing.t[0];
       void *pData = (void *)&simulink5ms_plotAndGains_B.plot4;
       int32_T size = 1*sizeof(real_T);
-      sendToAsyncQueueTgtAppSvc(2409335162U, time, pData, size);
+      sendToAsyncQueueTgtAppSvc(2933274357U, time, pData, size);
     }
   }
 
@@ -474,14 +567,14 @@ RT_MODEL_simulink5ms_plotAndGains_T *simulink5ms_plotAndGains(void)
     simulink5ms_plotAndGains_M->Timing.sampleHits = (&mdlSampleHits[0]);
   }
 
-  rtmSetTFinal(simulink5ms_plotAndGains_M, 50.0);
+  rtmSetTFinal(simulink5ms_plotAndGains_M, 60.0);
   simulink5ms_plotAndGains_M->Timing.stepSize0 = 0.005;
 
   /* External mode info */
-  simulink5ms_plotAndGains_M->Sizes.checksums[0] = (1960364336U);
-  simulink5ms_plotAndGains_M->Sizes.checksums[1] = (2702887103U);
-  simulink5ms_plotAndGains_M->Sizes.checksums[2] = (1075081637U);
-  simulink5ms_plotAndGains_M->Sizes.checksums[3] = (1237880454U);
+  simulink5ms_plotAndGains_M->Sizes.checksums[0] = (434034222U);
+  simulink5ms_plotAndGains_M->Sizes.checksums[1] = (3898556901U);
+  simulink5ms_plotAndGains_M->Sizes.checksums[2] = (497223002U);
+  simulink5ms_plotAndGains_M->Sizes.checksums[3] = (2477995020U);
 
   {
     static const sysRanDType rtAlwaysEnabled = SUBSYS_RAN_BC_ENABLE;
@@ -543,13 +636,13 @@ RT_MODEL_simulink5ms_plotAndGains_T *simulink5ms_plotAndGains(void)
 
   /* Initialize Sizes */
   simulink5ms_plotAndGains_M->Sizes.numContStates = (0);/* Number of continuous states */
-  simulink5ms_plotAndGains_M->Sizes.numY = (4);/* Number of model outputs */
+  simulink5ms_plotAndGains_M->Sizes.numY = (7);/* Number of model outputs */
   simulink5ms_plotAndGains_M->Sizes.numU = (0);/* Number of model inputs */
   simulink5ms_plotAndGains_M->Sizes.sysDirFeedThru = (0);/* The model is not direct feedthrough */
   simulink5ms_plotAndGains_M->Sizes.numSampTimes = (1);/* Number of sample times */
-  simulink5ms_plotAndGains_M->Sizes.numBlocks = (44);/* Number of blocks */
-  simulink5ms_plotAndGains_M->Sizes.numBlockIO = (13);/* Number of block outputs */
-  simulink5ms_plotAndGains_M->Sizes.numBlockPrms = (36);/* Sum of parameter "widths" */
+  simulink5ms_plotAndGains_M->Sizes.numBlocks = (59);/* Number of blocks */
+  simulink5ms_plotAndGains_M->Sizes.numBlockIO = (19);/* Number of block outputs */
+  simulink5ms_plotAndGains_M->Sizes.numBlockPrms = (39);/* Sum of parameter "widths" */
   return simulink5ms_plotAndGains_M;
 }
 

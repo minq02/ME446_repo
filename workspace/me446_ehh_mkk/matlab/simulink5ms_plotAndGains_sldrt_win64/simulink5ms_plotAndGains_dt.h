@@ -6,9 +6,9 @@
  *
  * Code generation for model "simulink5ms_plotAndGains".
  *
- * Model version              : 9.1
+ * Model version              : 9.2
  * Simulink Coder version : 9.7 (R2022a) 13-Nov-2021
- * C source code generated on : Wed Jan 25 13:31:41 2023
+ * C source code generated on : Wed Feb 22 13:24:57 2023
  *
  * Target selection: sldrt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -73,14 +73,14 @@ static const char_T * rtDataTypeNames[] = {
 
 /* data type transitions for block I/O structure */
 static DataTypeTransition rtBTransitions[] = {
-  { (char_T *)(&simulink5ms_plotAndGains_B.plot1), 0, 0, 4 },
+  { (char_T *)(&simulink5ms_plotAndGains_B.plot1), 0, 0, 10 },
 
   { (char_T *)(&simulink5ms_plotAndGains_B.PacketInput1_o1[0]), 6, 0, 5 },
 
   { (char_T *)(&simulink5ms_plotAndGains_B.Gain1), 4, 0, 7 }
   ,
 
-  { (char_T *)(&simulink5ms_plotAndGains_DW.PacketInput1_PWORK), 11, 0, 7 }
+  { (char_T *)(&simulink5ms_plotAndGains_DW.PacketInput1_PWORK), 11, 0, 13 }
 };
 
 /* data type transition table for block I/O structure */
@@ -96,7 +96,7 @@ static DataTypeTransition rtPTransitions[] = {
 
   { (char_T *)(&simulink5ms_plotAndGains_P.PacketInput1_PacketID), 6, 0, 2 },
 
-  { (char_T *)(&simulink5ms_plotAndGains_P.Gain1_Gain), 0, 0, 29 },
+  { (char_T *)(&simulink5ms_plotAndGains_P.Gain1_Gain), 0, 0, 32 },
 
   { (char_T *)(&simulink5ms_plotAndGains_P.ConstantMustbeThisValue0x7fff_Value),
     4, 0, 1 }
