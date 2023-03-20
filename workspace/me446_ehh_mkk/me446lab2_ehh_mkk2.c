@@ -84,13 +84,58 @@ float omega3 = 0;
 float tau3_temp = 0;
 float theta3_des = 0;
 
-//PI control variables
+//PD control variables
 float Kp1 = 10;
-float Kp2 = 10;
-float Kp3 = 10;
-float KD1 = 1;
-float KD2 = 1;
-float KD3 = 1;
+float Kp2 = 25;
+float Kp3 = 30;
+float Kp1s = 20;
+float Kp2s = 50;
+float Kp3s = 70;
+float KD1 = 0.8;
+float KD2 = 2;
+float KD3 = 1.1;
+float KD1s = 1.5;
+float KD2s = 2;
+float KD3s = 1.6;
+
+float ethresh1 = 0.02;
+float ethresh2 = 0.02;
+float ethresh3 = 0.02;
+
+//PID variables
+float KI1 = 200;
+float KI2 = 400;
+float KI3 = 400;
+
+float Ik1 = 0;
+float Ik2 = 0;
+float Ik3 = 0;
+
+float Ik1_old = 0;
+float Ik2_old = 0;
+float Ik3_old = 0;
+
+float error1 = 0;
+float error2 = 0;
+float error3 = 0;
+
+float error1_old = 0;
+float error2_old = 0;
+float error3_old = 0;
+
+float time = 0;
+
+//Cubic Trajectory
+float a1_des = 0;
+float a2_des = 0;
+float a3_des = 0;
+
+float omega1_des = 0;
+float omega2_des = 0;
+float omega3_des = 0;
+
+//fun trajectory
+float radius = 0;
 
 // This function is called every 1 ms
 void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, float *tau2, float *tau3, int error) {
@@ -111,17 +156,66 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
         GpioDataRegs.GPBTOGGLE.bit.GPIO60 = 1; // Blink LED on Emergency Stop Box
     }
 
-    if ((mycount%2000)==0) {
-        if (theta1_des > 0.1) {
-            theta1_des = 0;
-            theta2_des = 0;
-            theta3_des = 0;
-        } else {
-            theta1_des = PI / 6;
-            theta2_des = PI / 6;
-            theta3_des = PI / 6;
-        }
-    }
+
+// //PD and PID Control
+//if ((mycount%2000)==0) {
+//    if (theta1_des > 0.1) {
+//        theta1_des = 0;
+//        theta2_des = 0;
+//        theta3_des = 0;
+//    } else {
+//        theta1_des = PI / 6;
+//        theta2_des = PI / 6;
+//        theta3_des = PI / 6;
+//    }
+//}
+
+
+//    //PID with feedback cubic trajectory
+//    time = (mycount%2000) * 0.001;
+//
+//    if (time > 1) {
+//        theta1_des = -2 + 6 * time - 9.0/2 * time*time + time*time*time;
+//        theta2_des = -2 + 6 * time - 9.0/2 * time*time + time*time*time;
+//        theta3_des = -2 + 6 * time - 9.0/2 * time*time + time*time*time;
+//        omega1_des = 6 - 9 * time + 3*time*time;
+//        omega2_des = 6 - 9 * time + 3*time*time;
+//        omega3_des = 6 - 9 * time + 3*time*time;
+//        a1_des = -9 + 6*time;
+//        a2_des = -9 + 6*time;
+//        a3_des = -9 + 6*time;
+//    } else {
+//        theta1_des = 3.0/2 * time*time - time*time*time;
+//        theta2_des = 3.0/2 * time*time - time*time*time;
+//        theta3_des = 3.0/2 * time*time - time*time*time;
+//        omega1_des = 3 * time - 3*time*time;
+//        omega2_des = 3 * time - 3*time*time;
+//        omega3_des = 3 * time - 3*time*time;
+//        a1_des = 3 - 6*time;
+//        a2_des = 3 - 6*time;
+//        a3_des = 3 - 6*time;
+//    }
+
+    // crazy 8 trajectory
+
+    time = (mycount%4000) * 0.001;
+    radius = (1 - sin(PI/2*time))*0.1;
+    x_loc = 0.3;
+    y_loc = radius * cos(PI/2*time);
+    z_loc = radius * sin(PI/2*time) + 0.4;
+
+    alpha = atan2(z_loc-L, pow((pow(x_loc,2) + pow(y_loc,2)), 0.5));
+    beta = acos((pow(z_loc-L, 2) + pow(x_loc, 2) + pow(y_loc, 2) - 2*pow(L, 2))/(-2*pow(L,2)));
+    gamma = (PI - beta) / 2.0;
+
+    theta1 = atan2(y_loc,x_loc);
+    theta2 = - (gamma + alpha);
+    theta3 = PI - beta;
+
+    theta1_des = theta1;
+    theta2_des = theta2 + PI/2;
+    theta3_des = theta3 + theta2_des - PI/2;
+
 
     //omega1
     omega1 = (theta1motor - theta1_old)/0.001;
@@ -133,9 +227,9 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
     //omega2
     omega2 = (theta2motor - theta2_old)/0.001;
     omega2 = (omega2 + omega2_old2 + omega2_old2)/3.0;
-    theta2_old = theta1motor;
-    omega2_old2 = omega1_old1;
-    omega2_old1 = omega1;
+    theta2_old = theta2motor;
+    omega2_old2 = omega2_old1;
+    omega2_old1 = omega2;
 
     //omega3
     omega3 = (theta3motor - theta3_old)/0.001;
@@ -144,28 +238,126 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
     omega3_old2 = omega3_old1;
     omega3_old1 = omega3;
 
-    tau1_temp = Kp1 * (theta1_des - theta1motor) - KD1 * omega1;
-    tau2_temp = Kp2 * (theta2_des - theta2motor) - KD2 * omega2;
-    tau3_temp = Kp3 * (theta3_des - theta3motor) - KD3 * omega3;
+//    //PD Control short move vs long move
+//    if(fabs(theta1_des - theta1motor)<ethresh1)
+//    {
+//        tau1_temp = Kp1s * (theta1_des - theta1motor) - KD1s * omega1;
+//    } else {
+//        tau1_temp = Kp1 * (theta1_des - theta1motor) - KD1 * omega1;
+//    }
+//
+//    if(fabs(theta2_des - theta2motor)<ethresh2)
+//    {
+//        tau2_temp = Kp2s * (theta2_des - theta2motor) - KD2s * omega2;
+//    } else {
+//        tau2_temp = Kp2 * (theta2_des - theta2motor) - KD2 * omega2;
+//    }
+//
+//
+//    if(fabs(theta3_des - theta3motor)<ethresh3)
+//    {
+//        tau3_temp = Kp3s * (theta3_des - theta3motor) - KD3s * omega3;
+//    } else {
+//        tau3_temp = Kp3 * (theta3_des - theta3motor) - KD3 * omega3;
+//    }
+
+  //PID Control
+    error1 = (theta1_des - theta1motor);
+    error2 = (theta2_des - theta2motor);
+    error3 = (theta3_des - theta3motor);
+
+    Ik1 = Ik1_old + ((error1+error1_old)/2)*0.001;
+    Ik2 = Ik2_old + ((error2+error2_old)/2)*0.001;
+    Ik3 = Ik3_old + ((error3+error3_old)/2)*0.001;
+
+    error1_old = error1;
+    error2_old = error2;
+    error3_old = error3;
+
+    if(fabs(theta1_des - theta1motor)<ethresh1)
+    {
+        tau1_temp = Kp1s * (theta1_des - theta1motor) - KD1s * omega1 + KI1 * Ik1;
+    } else {
+        tau1_temp = Kp1 * (theta1_des - theta1motor) - KD1 * omega1;// + KI1 * Ik1;
+        Ik1 = 0;
+        Ik1_old = 0;
+    }
+
+    if(fabs(theta2_des - theta2motor)<ethresh2)
+    {
+        tau2_temp = Kp2s * (theta2_des - theta2motor) - KD2s * omega2 + KI2 * Ik2;
+    } else {
+        tau2_temp = Kp2 * (theta2_des - theta2motor) - KD2 * omega2;// + KI2 * Ik2;
+        Ik2 = 0;
+        Ik2_old = 0;
+    }
+
+    if(fabs(theta3_des - theta3motor)<ethresh3)
+    {
+        tau3_temp = Kp3s * (theta3_des - theta3motor) - KD3s * omega3 + KI3 * Ik3;
+    } else {
+        tau3_temp = Kp3 * (theta3_des - theta3motor) - KD3 * omega3;// + KI3 * Ik3;
+        Ik3 = 0;
+        Ik3_old = 0;
+    }
+
+
+//     //ONLY for cubic trajectory
+//     if(fabs(theta1_des - theta1motor)<ethresh1)
+//     {
+//         tau1_temp = 0.0167 * a1_des + Kp1s * (theta1_des - theta1motor) + KI1 * Ik1 + KD1s * (omega1_des - omega1);
+//     } else {
+//         tau1_temp = 0.0167 * a1_des + Kp1 * (theta1_des - theta1motor) + KD1 * (omega1_des - omega1);
+//         Ik1 = 0;
+//         Ik1_old = 0;
+//     }
+//
+//     if(fabs(theta2_des - theta2motor)<ethresh2)
+//     {
+//         tau2_temp = 0.03 * a2_des + Kp2s * (theta2_des - theta2motor) + KI2 * Ik2 + KD2s * (omega2_des - omega2);
+//     } else {
+//         tau2_temp = 0.03 * a2_des + Kp2 * (theta2_des - theta2motor) + KD2 * (omega2_des - omega2);
+//         Ik2 = 0;
+//         Ik2_old = 0;
+//     }
+//
+//     if(fabs(theta3_des - theta3motor)<ethresh3)
+//     {
+//         tau3_temp = 0.0128 * a3_des + Kp3s * (theta3_des - theta3motor) + KI3 * Ik3 + KD3s * (omega3_des - omega3);
+//     } else {
+//         tau3_temp = 0.0128 * a3_des + Kp3 * (theta3_des - theta3motor) + KD3 * (omega3_des - omega3);
+//         Ik3 = 0;
+//         Ik3_old = 0;
+//     }
 
     //Motor torque limitation(Max: 5 Min: -5)
     if (tau1_temp > 5) {
         tau1_temp = 5;
+        Ik1 = Ik1_old;
     } else if (tau1_temp < -5) {
         tau1_temp = -5;
+        Ik1 = Ik1_old;
     }
 
     if (tau2_temp > 5) {
         tau2_temp = 5;
+        Ik2 = Ik2_old;
     } else if (tau2_temp < -5) {
         tau2_temp = -5;
+        Ik2 = Ik2_old;
     }
 
     if (tau3_temp > 5) {
         tau3_temp = 5;
+        Ik3 = Ik3_old;
     } else if (tau3_temp < -5) {
         tau3_temp = -5;
+        Ik3 = Ik3_old;
     }
+
+    Ik1_old = Ik1;
+    Ik2_old = Ik2;
+    Ik3_old = Ik3;
 
     *tau1 = tau1_temp;
     *tau2 = tau2_temp;
@@ -195,9 +387,9 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
     mt2 = mt2*180/PI;
     mt3 = mt3*180/PI;
 
-    Simulink_PlotVar1 = theta1motor;
-    Simulink_PlotVar2 = theta2motor;
-    Simulink_PlotVar3 = theta3motor;
+    Simulink_PlotVar1 = theta1_des;
+    Simulink_PlotVar2 = theta2_des;
+    Simulink_PlotVar3 = theta3_des;
     Simulink_PlotVar4 = theta1_des;
 
     mycount++;
