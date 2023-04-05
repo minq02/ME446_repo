@@ -196,7 +196,7 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
 //        a3_des = 3 - 6*time;
 //    }
 
-    // crazy 8 trajectory
+    // heart trajectory
 
     time = (mycount%4000) * 0.001;
     radius = (1 - sin(PI/2*time))*0.1;
@@ -331,27 +331,27 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
 //     }
 
     //Motor torque limitation(Max: 5 Min: -5)
-    if (tau1_temp > 5) {
-        tau1_temp = 5;
+    if (tau1_temp > 4.9) {
+        tau1_temp = 4.9;
         Ik1 = Ik1_old;
-    } else if (tau1_temp < -5) {
-        tau1_temp = -5;
+    } else if (tau1_temp < -4.9) {
+        tau1_temp = -4.9;
         Ik1 = Ik1_old;
     }
 
-    if (tau2_temp > 5) {
-        tau2_temp = 5;
+    if (tau2_temp > 4.9) {
+        tau2_temp = 4.9;
         Ik2 = Ik2_old;
-    } else if (tau2_temp < -5) {
-        tau2_temp = -5;
+    } else if (tau2_temp < -4.9) {
+        tau2_temp = -4.9;
         Ik2 = Ik2_old;
     }
 
-    if (tau3_temp > 5) {
-        tau3_temp = 5;
+    if (tau3_temp > 4.9) {
+        tau3_temp = 4.9;
         Ik3 = Ik3_old;
-    } else if (tau3_temp < -5) {
-        tau3_temp = -5;
+    } else if (tau3_temp < -4.9) {
+        tau3_temp = -4.9;
         Ik3 = Ik3_old;
     }
 
@@ -387,9 +387,9 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
     mt2 = mt2*180/PI;
     mt3 = mt3*180/PI;
 
-    Simulink_PlotVar1 = theta1_des;
-    Simulink_PlotVar2 = theta2_des;
-    Simulink_PlotVar3 = theta3_des;
+    Simulink_PlotVar1 = theta1motor;
+    Simulink_PlotVar2 = theta2motor;
+    Simulink_PlotVar3 = theta3motor;
     Simulink_PlotVar4 = theta1_des;
 
     mycount++;
