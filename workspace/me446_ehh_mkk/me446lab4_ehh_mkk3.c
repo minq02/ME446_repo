@@ -139,6 +139,14 @@ float KDx = 5;
 float KDy = 5;
 float KDz = 5;
 
+//PD Gain Lab 4 Part 3
+float Kpxn = 400;
+float Kpyn = 600;
+float Kpzn = 600;
+float KDxn = 5;
+float KDyn = 5;
+float KDzn = 5;
+
 //Friction Compensation
 float u_fric1 = 0;
 float vis_pos_1 = 0.18;
@@ -205,6 +213,13 @@ float RT31 = 0;
 float RT32 = 0;
 float RT33 = 0;
 
+float d1 = 0;
+float d2 = 0;
+float d3 = 0;
+float p1 = 0;
+float p2 = 0;
+float p3 = 0;
+
 float x_motor = 0;
 float y_motor = 0;
 float z_motor = 0;
@@ -225,6 +240,10 @@ float Fx = 0;
 float Fy = 0;
 float Fz = 0;
 
+float Fxn = 0;
+float Fyn = 0;
+float Fzn = 0;
+
 //friction multiplication factor
 float ff1 = 0.5;
 float ff2 = 0.5;
@@ -236,6 +255,17 @@ float Kt = 6.0;
 //Force in Z direction
 float F_ZCmd = 0;
 
+//Equation of a straight line
+float xa = 0.0;
+float xb = 0.0;
+float ya = 0.0;
+float yb = 0.0;
+float za = 0.0;
+float zb = 0.0;
+
+float t_start = 0.0;
+float t_total = 0.0;
+float t = 0.0;
 
 // This function is called every 1 ms
 void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, float *tau2, float *tau3, int error) {
@@ -257,32 +287,49 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
     }
 
     //desired end-effector position declaration
-    x_des = 0.254;
-    y_des = 0.254;
-    z_des = 0.254;
+    xa = 0.3;
+    xb = 0;
+    ya = 0;
+    yb = 0.3;
+    za = 0.254;
+    zb = 0.254;
 
-    //omega1 calculations
+    t_total = 6.0;
+
+    t = mycount%6000 / 1000.0;
+
+    if (mycount%12000 < 6000) {
+        x_des = (xb - xa) * (t - t_start) / t_total + xa;
+        y_des = (yb - ya) * (t - t_start) / t_total + ya;
+        z_des = (zb - za) * (t - t_start) / t_total + za;
+    } else {
+        x_des = (xa - xb) * (t - t_start) / t_total + xb;
+        y_des = (ya - yb) * (t - t_start) / t_total + yb;
+        z_des = (za - zb) * (t - t_start) / t_total + zb;
+    }
+
+    //omega1
     omega1 = (theta1motor - theta1_old)/0.001;
     omega1 = (omega1 + omega1_old1 + omega1_old2)/3.0;
     theta1_old = theta1motor;
     omega1_old2 = omega1_old1;
     omega1_old1 = omega1;
 
-    //omega2 calculations
+    //omega2
     omega2 = (theta2motor - theta2_old)/0.001;
     omega2 = (omega2 + omega2_old2 + omega2_old2)/3.0;
     theta2_old = theta2motor;
     omega2_old2 = omega2_old1;
     omega2_old1 = omega2;
 
-    //omega3 calculations
+    //omega3
     omega3 = (theta3motor - theta3_old)/0.001;
     omega3 = (omega3 + omega3_old1 + omega3_old2)/3.0;
     theta3_old = theta3motor;
     omega3_old2 = omega3_old1;
     omega3_old1 = omega3;
 
-    // Jacobian Transpose
+    //Jacobian Transpose
     cosq1 = cos(theta1motor);
     sinq1 = sin(theta1motor);
     cosq2 = cos(theta2motor);
@@ -309,14 +356,52 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
     y_dot_motor = JT_12 * omega1 + JT_22 * omega2 + JT_32 * omega3;
     z_dot_motor = JT_13 * omega1 + JT_23 * omega2 + JT_33 * omega3;
 
-    //Task Space PD Control
-    Fx = Kpx * (x_des - x_motor) + KDx * (x_dot_des - x_dot_motor);
-    Fy = Kpy * (y_des - y_motor) + KDy * (y_dot_des - y_dot_motor);
-    Fz = Kpz * (z_des - z_motor) + KDz * (z_dot_des - z_dot_motor);
+//    //Task Space PD Control ONLY for feedforward
+//    Fx = Kpx * (x_des - x_motor) + KDx * (x_dot_des - x_dot_motor);
+//    Fy = Kpy * (y_des - y_motor) + KDy * (y_dot_des - y_dot_motor);
+//    Fz = Kpz * (z_des - z_motor) + KDz * (z_dot_des - z_dot_motor);
+//
+//    tau1_temp = JT_11 * Fx + JT_12 * Fy + JT_13 * Fz + JT_31 * (F_ZCmd / Kt);
+//    tau2_temp = JT_21 * Fx + JT_22 * Fy + JT_23 * Fz + JT_32 * (F_ZCmd / Kt);
+//    tau3_temp = JT_31 * Fx + JT_32 * Fy + JT_33 * Fz + JT_33 * (F_ZCmd / Kt);
 
-    tau1_temp = JT_11 * Fx + JT_12 * Fy + JT_13 * Fz;
-    tau2_temp = JT_21 * Fx + JT_22 * Fy + JT_23 * Fz;
-    tau3_temp = JT_31 * Fx + JT_32 * Fy + JT_33 * Fz;
+    // Desired N Frame for Impedance Control
+    thetax = 0;
+    thetay = 0;
+    thetaz = PI/4;
+
+    // Rotation zxy and its Transpose
+    cosz = cos(thetaz);
+    sinz = sin(thetaz);
+    cosx = cos(thetax);
+    sinx = sin(thetax);
+    cosy = cos(thetay);
+    siny = sin(thetay);
+    RT11 = R11 = cosz*cosy-sinz*sinx*siny;
+    RT21 = R12 = -sinz*cosx;
+    RT31 = R13 = cosz*siny+sinz*sinx*cosy;
+    RT12 = R21 = sinz*cosy+cosz*sinx*siny;
+    RT22 = R22 = cosz*cosx;
+    RT32 = R23 = sinz*siny-cosz*sinx*cosy;
+    RT13 = R31 = -cosx*siny;
+    RT23 = R32 = sinx;
+    RT33 = R33 = cosx*cosy;
+
+    //Only for impedance control in a new frame N
+    p1 = Kpxn * (R11 * (x_des - x_motor) + R12 * (y_des - y_motor) + R13 * (z_des - z_motor));
+    p2 = Kpyn * (R21 * (x_des - x_motor) + R22 * (y_des - y_motor) + R23 * (z_des - z_motor));
+    p3 = Kpzn * (R31 * (x_des - x_motor) + R32 * (y_des - y_motor) + R33 * (z_des - z_motor));
+    d1 = KDxn * (R11 * (x_dot_des - x_dot_motor) + R12 * (y_dot_des - y_dot_motor) + R13 * (z_dot_des - z_dot_motor));
+    d2 = KDyn * (R21 * (x_dot_des - x_dot_motor) + R22 * (y_dot_des - y_dot_motor) + R23 * (z_dot_des - z_dot_motor));
+    d3 = KDzn * (R31 * (x_dot_des - x_dot_motor) + R32 * (y_dot_des - y_dot_motor) + R33 * (z_dot_des - z_dot_motor));
+
+    Fx = R11 * (p1 + d1) + R21 * (p2 + d2) + R31 * (p3 + d3);
+    Fy = R12 * (p1 + d1) + R22 * (p2 + d2) + R32 * (p3 + d3);
+    Fz = R13 * (p1 + d1) + R23 * (p2 + d2) + R33 * (p3 + d3);
+
+    tau1_temp = JT_11 * Fx + JT_12 * Fy + JT_13 * Fz + JT_31;
+    tau2_temp = JT_21 * Fx + JT_22 * Fy + JT_23 * Fz + JT_32;
+    tau3_temp = JT_31 * Fx + JT_32 * Fy + JT_33 * Fz + JT_33;
 
     //Implement Friction Compensation
     //theta1dot
@@ -327,7 +412,7 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
     } else {
         u_fric1 = slope1 * omega1;
     }
-    tau1_temp += (u_fric1 * ff1 + JT_31 * (F_ZCmd / Kt));
+    tau1_temp += (u_fric1 * ff1);
 
     //theta2dot
     if (omega2 > 0.05) {
@@ -337,15 +422,15 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
     } else {
         u_fric2 = slope2 * omega2;
     }
-    tau2_temp += (u_fric2 * ff2 + JT_32 * (F_ZCmd / Kt));
+    tau2_temp += (u_fric2 * ff2);
 
-    //theta3dot
+    //theta3dot`
     if (omega3 > 0.05) {
         u_fric3 = vis_pos_3 * omega3 + cou_pos_3;
     } else if (omega3 < -0.05) {
         u_fric3 = vis_neg_3 * omega3 + cou_neg_3;
     } else {
-        u_fric3 = slope3 * omega3 + JT_33 * (F_ZCmd / Kt);
+        u_fric3 = slope3 * omega3;
     }
     tau3_temp += (u_fric3 * ff3);
 
