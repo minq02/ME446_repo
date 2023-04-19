@@ -78,7 +78,6 @@ float theta2array[100];
 long arrayindex = 0;
 int UARTprint = 0;
 
-
 //Forward Kinematic Variables For TerraTerm
 float printtheta1motor = 0;
 float printtheta2motor = 0;
@@ -133,12 +132,13 @@ float tau3_temp = 0;
 float theta3_des = 0;
 
 //PD Gain variables
-float Kpx = 400;
-float Kpy = 600;
-float Kpz = 600;
+float Kpx = 800;
+float Kpy = 800;
+float Kpz = 800;
 float KDx = 5;
 float KDy = 5;
 float KDz = 5;
+float zero = 0;
 
 //PD Gain Lab 4 Part 3
 float Kpxn = 400;
@@ -246,9 +246,9 @@ float Fyn = 0;
 float Fzn = 0;
 
 //friction multiplication factor
-float ff1 = 0.5;
-float ff2 = 0.5;
-float ff3 = 0.5;
+float ff1 = 0.4;
+float ff2 = 0.4;
+float ff3 = 0.4;
 
 //torque constant
 float Kt = 6.0;
@@ -257,16 +257,29 @@ float Kt = 6.0;
 float F_ZCmd = 0;
 
 //Equation of a straight line
-float xa = 0.0;
-float xb = 0.0;
-float ya = 0.0;
-float yb = 0.0;
-float za = 0.0;
-float zb = 0.0;
-
 float t_start = 0.0;
 float t_total = 0.0;
 float t = 0.0;
+
+//FINAL PROJECT
+#define NUM_POINT 6
+
+typedef struct point_tag{
+    float x;
+    float y;
+    float z;
+    float thz;
+    int mode;
+} point;
+
+int mode_val = 0;
+
+point point_array[NUM_POINT] = {{0.14, 0.00, 0.43, 0, 0},
+                               {0.04, 0.35, 0.37, 0, 0},
+                               {0.04, 0.35, 0.16, 0, 0},
+                               {0.04, 0.35, 0.12, 0, 1},
+                               {0.04, 0.35, 0.16, 0, 1},
+                               {0.04, 0.35, 0.37, 0, 0}};
 
 // This function is called every 1 ms
 void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, float *tau2, float *tau3, int error) {
@@ -287,45 +300,35 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
         GpioDataRegs.GPBTOGGLE.bit.GPIO60 = 1; // Blink LED on Emergency Stop Box
     }
 
-    /*
-     * Straight Line Following
-     *
-     * To make the robot follow a straight line with a desired speed along that line's direction,
-     * begin by defining the desired starting and ending end-effector position.
-     *
-     * Then, define the time required for one straight line following.
-     *
-     * After that, write a if-else statement depending on which direction of the path to follow.
-     *
-     * The three equations for x, y, z as a function of time can be derived given the start and end points
-     * along with the desired speed in meters/second
-     *
-     * Desired speed can be calculated by distance between start and end points multiplied by time taken / time total
-     */
-
-    //Desired end-effector position declaration (a: starting | b: ending)
-    xa = 0.3;
-    xb = 0;
-    ya = 0;
-    yb = 0.3;
-    za = 0.254;
-    zb = 0.254;
-
-    //Time required
-    t_total = 6.0;
-
-    //Time taken reset
-    t = mycount%6000 / 1000.0;
-
-    if (mycount%12000 < 6000) { //CW
-        x_des = (xb - xa) * (t - t_start) / t_total + xa;
-        y_des = (yb - ya) * (t - t_start) / t_total + ya;
-        z_des = (zb - za) * (t - t_start) / t_total + za;
-    } else { //CCW
-        x_des = (xa - xb) * (t - t_start) / t_total + xb;
-        y_des = (ya - yb) * (t - t_start) / t_total + yb;
-        z_des = (za - zb) * (t - t_start) / t_total + zb;
+    if (mycount < 4000) { // goes to top of hole
+        mode_val = point_array[1].mode;
+        x_des = (point_array[1].x - point_array[0].x) * (mycount - 0) / 4000 + point_array[0].x;
+        y_des = (point_array[1].y - point_array[0].y) * (mycount - 0) / 4000 + point_array[0].y;
+        z_des = (point_array[1].z - point_array[0].z) * (mycount - 0) / 4000 + point_array[0].z;
+    } else if (mycount < 6000) { // goes to entrance of hole
+        mode_val = point_array[2].mode;
+        x_des = (point_array[2].x - point_array[1].x) * (mycount - 4000) / 2000 + point_array[1].x;
+        y_des = (point_array[2].y - point_array[1].y) * (mycount - 4000) / 2000 + point_array[1].y;
+        z_des = (point_array[2].z - point_array[1].z) * (mycount - 4000) / 2000 + point_array[1].z;
+    } else if (mycount < 9000) { // goes in hole
+        mode_val = point_array[3].mode;
+        x_des = (point_array[3].x - point_array[2].x) * (mycount - 6000) / 3000 + point_array[2].x;
+        y_des = (point_array[3].y - point_array[2].y) * (mycount - 6000) / 3000 + point_array[2].y;
+        z_des = (point_array[3].z - point_array[2].z) * (mycount - 6000) / 3000 + point_array[2].z;
+    } else if (mycount > 11000 && mycount < 13000) { // wait and goes out of hole
+        int c = 4;
+        mode_val = point_array[c].mode;
+        x_des = (point_array[c].x - point_array[c-1].x) * (mycount - 11000) / 2000 + point_array[c-1].x;
+        y_des = (point_array[c].y - point_array[c-1].y) * (mycount - 11000) / 2000 + point_array[c-1].y;
+        z_des = (point_array[c].z - point_array[c-1].z) * (mycount - 11000) / 2000 + point_array[c-1].z;
+    } else if (mycount < 16000) { // goes above hole
+        int c = 5;
+        mode_val = point_array[c].mode;
+        x_des = (point_array[c].x - point_array[c-1].x) * (mycount - 13000) / 3000 + point_array[c-1].x;
+        y_des = (point_array[c].y - point_array[c-1].y) * (mycount - 13000) / 3000 + point_array[c-1].y;
+        z_des = (point_array[c].z - point_array[c-1].z) * (mycount - 13000) / 3000 + point_array[c-1].z;
     }
+
 
     /*
      * Calculating omega by getting the time difference between two theta values.
@@ -352,16 +355,6 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
     theta3_old = theta3motor;
     omega3_old2 = omega3_old1;
     omega3_old1 = omega3;
-
-    /*
-     * Implement Task Space PD Control
-     *
-     * In order to implement a task space control law with friction compensation,
-     * begin by defining the transpose of the Jocabian and forward kinematic equations for the CRS robot
-     *
-     * Then, calculate the end effector velocity (x_dot_motor, y_dot_motor, z_dot_motor) using Jacobians.
-     * By definition, jacobians link between angular velocities of joints and xyz velocities of end effector.
-     */
 
     //Jacobian Transpose Definition provided in lab 4 manual
     cosq1 = cos(theta1motor);
@@ -397,42 +390,14 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
      *
      * Begin by initializing and defining Kt, which is the robot's torque constant.
      *
-     * Calculate and add the vector multiplication of tranpose of Jacobian with [0; 0; force_z / Kt]
+     * Calculate and add the vector multiplication of tranpose of the Jacobian with [0; 0; force_z / Kt]
      * to convert from xyz of end effector to join torques.
-     */
-
-//    //Task Space PD Control ONLY for feedforward
-//    //Force in xyz using PD Control
-//    Fx = Kpx * (x_des - x_motor) + KDx * (x_dot_des - x_dot_motor);
-//    Fy = Kpy * (y_des - y_motor) + KDy * (y_dot_des - y_dot_motor);
-//    Fz = Kpz * (z_des - z_motor) + KDz * (z_dot_des - z_dot_motor);
-//
-//    //Conversion to tau 1, 2, and 3 using jacobian matrix
-//    tau1_temp = JT_11 * Fx + JT_12 * Fy + JT_13 * Fz + JT_31 * (F_ZCmd / Kt);
-//    tau2_temp = JT_21 * Fx + JT_22 * Fy + JT_23 * Fz + JT_32 * (F_ZCmd / Kt);
-//    tau3_temp = JT_31 * Fx + JT_32 * Fy + JT_33 * Fz + JT_33 * (F_ZCmd / Kt);
-
-    /*
-     * Impedance Control in non world frame axis
-     *
-     * Impedance is the relationship of force and displacement (and its derivatives)
-     *
-     * Begin by defining a desired frame, N, that you want to apply impedance control on.
-     * Frame N is defined by thetax, thetay, and thetaz, the rotation on world frame, W
-     * Also define the rotational matrix and its transpose
-     *
-     * We will use the rotation matrix coordinate transformation to select frame N as the weak axis.
-     * We can also use the rotation matrix to perform coordinate transformation of Fx, Fy, Fz in N frame
-     * to those of world frame.
-     *
-     * Since its easier to think about commanding the arm at world x, y, z coordinate point, we will rotate
-     * the errors from World coordinate to the N fram using the rotational matrix again.
      */
 
     // Desired N Frame for Impedance Control
     thetax = 0;
     thetay = 0;
-    thetaz = PI/4;
+    thetaz = 0;
 
     // Rotation xyz and its Transpose
     cosz = cos(thetaz);
@@ -452,40 +417,47 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
     RT33 = R33 = cosx*cosy;
 
     //ONLY for impedance control in a new frame N
-    //Define the positional part for PD control and transform coordinates using rotational matrix
-    p1 = Kpxn * (R11 * (x_des - x_motor) + R12 * (y_des - y_motor) + R13 * (z_des - z_motor));
-    p2 = Kpyn * (R21 * (x_des - x_motor) + R22 * (y_des - y_motor) + R23 * (z_des - z_motor));
-    p3 = Kpzn * (R31 * (x_des - x_motor) + R32 * (y_des - y_motor) + R33 * (z_des - z_motor));
+    if (mode_val == 0) { //stiff xyz
+        //Define the positional part for PD control and transform coordinates using rotational matrix
+        p1 = Kpxn * (R11 * (x_des - x_motor) + R12 * (y_des - y_motor) + R13 * (z_des - z_motor));
+        p2 = Kpyn * (R21 * (x_des - x_motor) + R22 * (y_des - y_motor) + R23 * (z_des - z_motor));
+        p3 = Kpzn * (R31 * (x_des - x_motor) + R32 * (y_des - y_motor) + R33 * (z_des - z_motor));
 
-    //Define the derivative part for PD control and transform coordinates using rotational matrix
-    d1 = KDxn * (R11 * (x_dot_des - x_dot_motor) + R12 * (y_dot_des - y_dot_motor) + R13 * (z_dot_des - z_dot_motor));
-    d2 = KDyn * (R21 * (x_dot_des - x_dot_motor) + R22 * (y_dot_des - y_dot_motor) + R23 * (z_dot_des - z_dot_motor));
-    d3 = KDzn * (R31 * (x_dot_des - x_dot_motor) + R32 * (y_dot_des - y_dot_motor) + R33 * (z_dot_des - z_dot_motor));
+        //Define the derivative part for PD control and transform coordinates using rotational matrix
+        d1 = KDxn * (R11 * (x_dot_des - x_dot_motor) + R12 * (y_dot_des - y_dot_motor) + R13 * (z_dot_des - z_dot_motor));
+        d2 = KDyn * (R21 * (x_dot_des - x_dot_motor) + R22 * (y_dot_des - y_dot_motor) + R23 * (z_dot_des - z_dot_motor));
+        d3 = KDzn * (R31 * (x_dot_des - x_dot_motor) + R32 * (y_dot_des - y_dot_motor) + R33 * (z_dot_des - z_dot_motor));
 
-    //Force in xyz using PD Control and transform from N frame to world frame using rotational matrix
-    Fx = R11 * (p1 + d1) + R21 * (p2 + d2) + R31 * (p3 + d3);
-    Fy = R12 * (p1 + d1) + R22 * (p2 + d2) + R32 * (p3 + d3);
-    Fz = R13 * (p1 + d1) + R23 * (p2 + d2) + R33 * (p3 + d3);
+        //Force in xyz using PD Control and transform from N frame to world frame using rotational matrix
+        Fx = R11 * (p1 + d1) + R21 * (p2 + d2) + R31 * (p3 + d3);
+        Fy = R12 * (p1 + d1) + R22 * (p2 + d2) + R32 * (p3 + d3);
+        Fz = R13 * (p1 + d1) + R23 * (p2 + d2) + R33 * (p3 + d3);
 
-    //Conversion to tau 1, 2, and 3 using jacobian matrix
-    tau1_temp = JT_11 * Fx + JT_12 * Fy + JT_13 * Fz + JT_31;
-    tau2_temp = JT_21 * Fx + JT_22 * Fy + JT_23 * Fz + JT_32;
-    tau3_temp = JT_31 * Fx + JT_32 * Fy + JT_33 * Fz + JT_33;
+        //Conversion to tau 1, 2, and 3 using jacobian matrix
+        tau1_temp = JT_11 * Fx + JT_12 * Fy + JT_13 * Fz + JT_31;
+        tau2_temp = JT_21 * Fx + JT_22 * Fy + JT_23 * Fz + JT_32;
+        tau3_temp = JT_31 * Fx + JT_32 * Fy + JT_33 * Fz + JT_33;
+    } else if (mode_val == 1) { //stiff z only
+        //Define the positional part for PD control and transform coordinates using rotational matrix
+        p1 = zero * (R11 * (x_des - x_motor) + R12 * (y_des - y_motor) + R13 * (z_des - z_motor));
+        p2 = zero * (R21 * (x_des - x_motor) + R22 * (y_des - y_motor) + R23 * (z_des - z_motor));
+        p3 = Kpzn * (R31 * (x_des - x_motor) + R32 * (y_des - y_motor) + R33 * (z_des - z_motor));
 
-    /*
-     * Implement Friction Compensation
-     *
-     * Straight line equations for all three joints were given.
-     *
-     * Viscous friction coefficient is capable of opposing the motion and is proportional to the
-     * rotational velocity of the joint.
-     *
-     * Coulomb friction can be used to calculate the force of dry friction.
-     *
-     * Positive and negative viscous and coulomb values from the equations were tuned for smooth motion.
-     *
-     * Lastly, multiply each friction by a friction multiplication factor to minimize friction effects.
-     */
+        //Define the derivative part for PD control and transform coordinates using rotational matrix
+        d1 = zero * (R11 * (x_dot_des - x_dot_motor) + R12 * (y_dot_des - y_dot_motor) + R13 * (z_dot_des - z_dot_motor));
+        d2 = zero * (R21 * (x_dot_des - x_dot_motor) + R22 * (y_dot_des - y_dot_motor) + R23 * (z_dot_des - z_dot_motor));
+        d3 = KDzn * (R31 * (x_dot_des - x_dot_motor) + R32 * (y_dot_des - y_dot_motor) + R33 * (z_dot_des - z_dot_motor));
+
+        //Force in xyz using PD Control and transform from N frame to world frame using rotational matrix
+        Fx = R11 * (p1 + d1) + R21 * (p2 + d2) + R31 * (p3 + d3);
+        Fy = R12 * (p1 + d1) + R22 * (p2 + d2) + R32 * (p3 + d3);
+        Fz = R13 * (p1 + d1) + R23 * (p2 + d2) + R33 * (p3 + d3);
+
+        //Conversion to tau 1, 2, and 3 using jacobian matrix
+        tau1_temp = JT_11 * Fx + JT_12 * Fy + JT_13 * Fz + JT_31;
+        tau2_temp = JT_21 * Fx + JT_22 * Fy + JT_23 * Fz + JT_32;
+        tau3_temp = JT_31 * Fx + JT_32 * Fy + JT_33 * Fz + JT_33;
+    }
 
     //theta1 friction compensation
     if (omega1 > 0.1) {
@@ -518,7 +490,7 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
     tau3_temp += (u_fric3 * ff3);
 
     /*
-     * Saturating motor torque to max of 4.9 and min of -4.9 for safety
+     * Saturating motor torque to a maximum of 4.9 and minimum of -4.9 for safety
      */
     if (tau1_temp > 4.9) {
         tau1_temp = 4.9;
