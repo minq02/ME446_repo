@@ -357,7 +357,7 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
      * Implement Task Space PD Control
      *
      * In order to implement a task space control law with friction compensation,
-     * begin by defining the transpose of the Jocabian and forward kinematic equations for the CRS robot
+     * begin by defining the transpose of the Jacobian and forward kinematic equations for the CRS robot
      *
      * Then, calculate the end effector velocity (x_dot_motor, y_dot_motor, z_dot_motor) using Jacobians.
      * By definition, jacobians link between angular velocities of joints and xyz velocities of end effector.
@@ -425,8 +425,8 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
      * We can also use the rotation matrix to perform coordinate transformation of Fx, Fy, Fz in N frame
      * to those of world frame.
      *
-     * Since its easier to think about commanding the arm at world x, y, z coordinate point, we will rotate
-     * the errors from World coordinate to the N fram using the rotational matrix again.
+     * Since it's easier to think about commanding the arm at world x, y, z coordinate point, we will rotate
+     * the errors from World coordinate to the N frame using the rotational matrix again.
      */
 
     // Desired N Frame for Impedance Control
@@ -487,7 +487,7 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
      * Lastly, multiply each friction by a friction multiplication factor to minimize friction effects.
      */
 
-    //theta1 friction compensation
+    //theta1 friction compensation; set of if else statements that were utilized from lab 3
     if (omega1 > 0.1) {
         u_fric1 = vis_pos_1 * omega1 + cou_pos_1;
     } else if (omega1 < -0.1) {
@@ -552,7 +552,7 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
     y_loc = (127.0*sin(theta1motor)*(cos(theta3motor) + sin(theta2motor)))/500.0;
     z_loc = (127.0*cos(theta2motor))/500.0 - (127.0*sin(theta3motor))/500.0 + 127.0/500.0;
 
-    //dh theta calfculation from xyz coordinate using inverse kinematics
+    //dh theta calculation from xyz coordinate using inverse kinematics
     alpha = atan2(z_loc-L, pow((pow(x_loc,2) + pow(y_loc,2)), 0.5));
     beta = acos((pow(z_loc-L, 2) + pow(x_loc, 2) + pow(y_loc, 2) - 2*pow(L, 2))/(-2*pow(L,2)));
     gamma = (PI - beta) / 2.0;
