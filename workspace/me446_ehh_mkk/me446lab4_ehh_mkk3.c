@@ -54,7 +54,8 @@ void implement_discrete_tf(steptraj_t *traj, float step, float *qd, float *qd_do
 
 
 
-// These two offsets are only used in the main file user_CRSRobot.c  You just need to create them here and find the correct offset and then these offset will adjust the encoder readings
+// These two offsets are only used in the main file user_CRSRobot.c 
+// You just need to create them here and find the correct offset and then these offset will adjust the encoder readings
 float offset_Enc2_rad = -0.42865286;
 float offset_Enc3_rad = 0.22148228;
 
@@ -411,7 +412,7 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
      */
 
 //    //Task Space PD Control ONLY for feedforward
-//    //Force in xyz using PD Control
+//    //Force in xyz using PD Control (position error is des - motor) (velocity error is dot_des - dot_motor)
 //    Fx = Kpx * (x_des - x_motor) + KDx * (x_dot_des - x_dot_motor);
 //    Fy = Kpy * (y_des - y_motor) + KDy * (y_dot_des - y_dot_motor);
 //    Fz = Kpz * (z_des - z_motor) + KDz * (z_dot_des - z_dot_motor);
@@ -462,11 +463,13 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
 
     //ONLY for impedance control in a new frame N
     //Define the positional part for PD control and transform coordinates using rotational matrix
+    //(position error is des - motor) (velocity error is dot_des - dot_motor)
     p1 = Kpxn * (R11 * (x_des - x_motor) + R12 * (y_des - y_motor) + R13 * (z_des - z_motor));
     p2 = Kpyn * (R21 * (x_des - x_motor) + R22 * (y_des - y_motor) + R23 * (z_des - z_motor));
     p3 = Kpzn * (R31 * (x_des - x_motor) + R32 * (y_des - y_motor) + R33 * (z_des - z_motor));
 
     //Define the derivative part for PD control and transform coordinates using rotational matrix
+    //(position error is des - motor) (velocity error is dot_des - dot_motor)
     d1 = KDxn * (R11 * (x_dot_des - x_dot_motor) + R12 * (y_dot_des - y_dot_motor) + R13 * (z_dot_des - z_dot_motor));
     d2 = KDyn * (R21 * (x_dot_des - x_dot_motor) + R22 * (y_dot_des - y_dot_motor) + R23 * (z_dot_des - z_dot_motor));
     d3 = KDzn * (R31 * (x_dot_des - x_dot_motor) + R32 * (y_dot_des - y_dot_motor) + R33 * (z_dot_des - z_dot_motor));
