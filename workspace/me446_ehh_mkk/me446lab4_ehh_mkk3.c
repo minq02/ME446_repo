@@ -79,7 +79,7 @@ long arrayindex = 0;
 int UARTprint = 0;
 
 
-//Forward Kinematic Variables For TerraTerm
+//Forward Kinematic Variables used to calculate current position of end-effector for TerraTerm
 float printtheta1motor = 0;
 float printtheta2motor = 0;
 float printtheta3motor = 0;
