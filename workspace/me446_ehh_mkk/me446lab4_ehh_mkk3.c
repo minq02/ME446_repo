@@ -58,7 +58,7 @@ void implement_discrete_tf(steptraj_t *traj, float step, float *qd, float *qd_do
 float offset_Enc2_rad = -0.42865286;
 float offset_Enc3_rad = 0.22148228;
 
-// Your global varialbes.
+// Your global variables.
 
 long mycount = 0;
 
