@@ -301,6 +301,9 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
      * along with the desired speed in meters/second
      *
      * Desired speed can be calculated by distance between start and end points multiplied by time taken / time total
+     vx = (xb-xa)*t/t_total
+     vy = (yb-ya)*t/t_total
+     vz = (zb-za)*t/t_total
      */
 
     //Desired end-effector position declaration (a: starting | b: ending)
