@@ -306,6 +306,12 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
      vz = (zb-za)*t/t_total
      */
 
+
+    //Task space PD controller controlling at one point in space
+    //  x_des = 0;
+    //  y_des = 0;
+    //  z_des = 0;
+    
     //Desired end-effector position declaration (a: starting | b: ending)
     xa = 0.3;
     xb = 0;
