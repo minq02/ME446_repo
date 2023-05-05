@@ -132,9 +132,9 @@ float tau3_temp = 0;
 float theta3_des = 0;
 
 //PD Gain variables
-float Kpx = 800;
-float Kpy = 800;
-float Kpz = 800;
+float Kpx = 1000;
+float Kpy = 1000;
+float Kpz = 1000;
 float KDx = 5;
 float KDy = 5;
 float KDz = 5;
@@ -246,15 +246,15 @@ float Fyn = 0;
 float Fzn = 0;
 
 //friction multiplication factor
-float ff1 = 0.4;
-float ff2 = 0.4;
-float ff3 = 0.4;
+float ff1 = 0.2;
+float ff2 = 0.2;
+float ff3 = 0.2;
 
 //torque constant
 float Kt = 6.0;
 
 //Force in Z direction
-float F_ZCmd = 0;
+float F_ZCmd = 7.05;
 
 //Equation of a straight line
 float t_start = 0.0;
@@ -262,24 +262,35 @@ float t_total = 0.0;
 float t = 0.0;
 
 //FINAL PROJECT
-#define NUM_POINT 6
+// number of points for points array
+#define NUM_POINT 15
 
+// struct of point
 typedef struct point_tag{
     float x;
     float y;
     float z;
-    float thz;
     int mode;
 } point;
 
 int mode_val = 0;
 
-point point_array[NUM_POINT] = {{0.14, 0.00, 0.43, 0, 0},
-                               {0.04, 0.35, 0.37, 0, 0},
-                               {0.04, 0.35, 0.16, 0, 0},
-                               {0.04, 0.35, 0.12, 0, 1},
-                               {0.04, 0.35, 0.16, 0, 1},
-                               {0.04, 0.35, 0.37, 0, 0}};
+// end effector position values
+point point_array[NUM_POINT] = {{0.14, 0.00, 0.43, 0}, // goes to top of hole
+                               {0.04, 0.34, 0.37, 0}, // goes to entrance of hole
+                               {0.04, 0.34, 0.16, 0}, // goes in hole
+                               {0.04, 0.34, 0.12, 1}, // wait and goes out of hole
+                               {0.04, 0.34, 0.16, 1}, // goes above hole
+                               {0.04, 0.34, 0.37, 0}, // goes around the box
+                               {0.22, 0.09, 0.37, 0}, // goes to entrance of zigzag
+                               {0.38, 0.11, 0.22, 0}, // goes in zigzag
+                               {0.41, 0.04, 0.22, 2}, // goes in middle section of zigzag
+                               {0.31, 0.04, 0.22, 0}, // exit zig zag
+                               {0.38, -0.05, 0.22, 2}, // move up
+                               {0.38, -0.05, 0.32, 0}, // move top of egg
+                               {0.20, 0.18, 0.32, 0}, // push down egg w/ force feedforward
+                               {0.20, 0.18, 0.32, 3}, // wait && go up from egg
+                               {0.254, 0.00, 0.508, 0}}; //return to original position
 
 // This function is called every 1 ms
 void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, float *tau2, float *tau3, int error) {
@@ -300,35 +311,88 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
         GpioDataRegs.GPBTOGGLE.bit.GPIO60 = 1; // Blink LED on Emergency Stop Box
     }
 
-    if (mycount < 4000) { // goes to top of hole
+    if (mycount < 2000) { // goes to top of hole
         mode_val = point_array[1].mode;
-        x_des = (point_array[1].x - point_array[0].x) * (mycount - 0) / 4000 + point_array[0].x;
-        y_des = (point_array[1].y - point_array[0].y) * (mycount - 0) / 4000 + point_array[0].y;
-        z_des = (point_array[1].z - point_array[0].z) * (mycount - 0) / 4000 + point_array[0].z;
-    } else if (mycount < 6000) { // goes to entrance of hole
+        x_des = (point_array[1].x - point_array[0].x) * (mycount - 0) / 2000 + point_array[0].x;
+        y_des = (point_array[1].y - point_array[0].y) * (mycount - 0) / 2000 + point_array[0].y;
+        z_des = (point_array[1].z - point_array[0].z) * (mycount - 0) / 2000 + point_array[0].z;
+    } else if (mycount < 2500) { // goes to entrance of hole
         mode_val = point_array[2].mode;
-        x_des = (point_array[2].x - point_array[1].x) * (mycount - 4000) / 2000 + point_array[1].x;
-        y_des = (point_array[2].y - point_array[1].y) * (mycount - 4000) / 2000 + point_array[1].y;
-        z_des = (point_array[2].z - point_array[1].z) * (mycount - 4000) / 2000 + point_array[1].z;
-    } else if (mycount < 9000) { // goes in hole
+        x_des = (point_array[2].x - point_array[1].x) * (mycount - 2000) / 500 + point_array[1].x;
+        y_des = (point_array[2].y - point_array[1].y) * (mycount - 2000) / 500 + point_array[1].y;
+        z_des = (point_array[2].z - point_array[1].z) * (mycount - 2000) / 500 + point_array[1].z;
+    } else if (mycount < 3500) { // goes in hole
         mode_val = point_array[3].mode;
-        x_des = (point_array[3].x - point_array[2].x) * (mycount - 6000) / 3000 + point_array[2].x;
-        y_des = (point_array[3].y - point_array[2].y) * (mycount - 6000) / 3000 + point_array[2].y;
-        z_des = (point_array[3].z - point_array[2].z) * (mycount - 6000) / 3000 + point_array[2].z;
-    } else if (mycount > 11000 && mycount < 13000) { // wait and goes out of hole
+        x_des = (point_array[3].x - point_array[2].x) * (mycount - 2500) / 1000 + point_array[2].x;
+        y_des = (point_array[3].y - point_array[2].y) * (mycount - 2500) / 1000 + point_array[2].y;
+        z_des = (point_array[3].z - point_array[2].z) * (mycount - 2500) / 1000 + point_array[2].z;
+    } else if (mycount > 4000 && mycount < 5000) { // wait and goes out of hole
         int c = 4;
         mode_val = point_array[c].mode;
-        x_des = (point_array[c].x - point_array[c-1].x) * (mycount - 11000) / 2000 + point_array[c-1].x;
-        y_des = (point_array[c].y - point_array[c-1].y) * (mycount - 11000) / 2000 + point_array[c-1].y;
-        z_des = (point_array[c].z - point_array[c-1].z) * (mycount - 11000) / 2000 + point_array[c-1].z;
-    } else if (mycount < 16000) { // goes above hole
+        x_des = (point_array[c].x - point_array[c-1].x) * (mycount - 4000) / 1000 + point_array[c-1].x;
+        y_des = (point_array[c].y - point_array[c-1].y) * (mycount - 4000) / 1000 + point_array[c-1].y;
+        z_des = (point_array[c].z - point_array[c-1].z) * (mycount - 4000) / 1000 + point_array[c-1].z;
+    } else if (mycount < 6000) { // goes above hole
         int c = 5;
         mode_val = point_array[c].mode;
-        x_des = (point_array[c].x - point_array[c-1].x) * (mycount - 13000) / 3000 + point_array[c-1].x;
-        y_des = (point_array[c].y - point_array[c-1].y) * (mycount - 13000) / 3000 + point_array[c-1].y;
-        z_des = (point_array[c].z - point_array[c-1].z) * (mycount - 13000) / 3000 + point_array[c-1].z;
+        x_des = (point_array[c].x - point_array[c-1].x) * (mycount - 5000) / 1000 + point_array[c-1].x;
+        y_des = (point_array[c].y - point_array[c-1].y) * (mycount - 5000) / 1000 + point_array[c-1].y;
+        z_des = (point_array[c].z - point_array[c-1].z) * (mycount - 5000) / 1000 + point_array[c-1].z;
+    } else if (mycount < 8000) { // goes around the box
+        int c = 6;
+        mode_val = point_array[c].mode;
+        x_des = (point_array[c].x - point_array[c-1].x) * (mycount - 6000) / 2000 + point_array[c-1].x;
+        y_des = (point_array[c].y - point_array[c-1].y) * (mycount - 6000) / 2000 + point_array[c-1].y;
+        z_des = (point_array[c].z - point_array[c-1].z) * (mycount - 6000) / 2000 + point_array[c-1].z;
+    } else if (mycount < 9000) { // goes to entrance of zigzag
+        int c = 7;
+        mode_val = point_array[c].mode;
+        x_des = (point_array[c].x - point_array[c-1].x) * (mycount - 8000) / 1000 + point_array[c-1].x;
+        y_des = (point_array[c].y - point_array[c-1].y) * (mycount - 8000) / 1000 + point_array[c-1].y;
+        z_des = (point_array[c].z - point_array[c-1].z) * (mycount - 8000) / 1000 + point_array[c-1].z;
+    } else if (mycount < 10000) { // goes in zigzag
+        int c = 8;
+        mode_val = point_array[c].mode;
+        x_des = (point_array[c].x - point_array[c-1].x) * (mycount - 9000) / 1000 + point_array[c-1].x;
+        y_des = (point_array[c].y - point_array[c-1].y) * (mycount - 9000) / 1000 + point_array[c-1].y;
+        z_des = (point_array[c].z - point_array[c-1].z) * (mycount - 9000) / 1000 + point_array[c-1].z;
+    } else if (mycount < 11000) { // goes in middle section of zigzag
+        int c = 9;
+        mode_val = point_array[c].mode;
+        x_des = (point_array[c].x - point_array[c-1].x) * (mycount - 10000) / 1000 + point_array[c-1].x;
+        y_des = (point_array[c].y - point_array[c-1].y) * (mycount - 10000) / 1000 + point_array[c-1].y;
+        z_des = (point_array[c].z - point_array[c-1].z) * (mycount - 10000) / 1000 + point_array[c-1].z;
+    } else if (mycount < 12000) { // exit zig zag
+        int c = 10;
+        mode_val = point_array[c].mode;
+        x_des = (point_array[c].x - point_array[c-1].x) * (mycount - 11000) / 1000 + point_array[c-1].x;
+        y_des = (point_array[c].y - point_array[c-1].y) * (mycount - 11000) / 1000 + point_array[c-1].y;
+        z_des = (point_array[c].z - point_array[c-1].z) * (mycount - 11000) / 1000 + point_array[c-1].z;
+    } else if (mycount < 13000) { // move up
+        int c = 11;
+        mode_val = point_array[c].mode;
+        x_des = (point_array[c].x - point_array[c-1].x) * (mycount - 12000) / 1000 + point_array[c-1].x;
+        y_des = (point_array[c].y - point_array[c-1].y) * (mycount - 12000) / 1000 + point_array[c-1].y;
+        z_des = (point_array[c].z - point_array[c-1].z) * (mycount - 12000) / 1000 + point_array[c-1].z;
+    } else if (mycount < 14000) { // move top of egg
+        int c = 12;
+        mode_val = point_array[c].mode;
+        x_des = (point_array[c].x - point_array[c-1].x) * (mycount - 13000) / 1000 + point_array[c-1].x;
+        y_des = (point_array[c].y - point_array[c-1].y) * (mycount - 13000) / 1000 + point_array[c-1].y;
+        z_des = (point_array[c].z - point_array[c-1].z) * (mycount - 13000) / 1000 + point_array[c-1].z;
+    } else if (mycount < 15000) { // push down egg w/ force feedforward
+        int c = 13;
+        mode_val = point_array[c].mode;
+        x_des = (point_array[c].x - point_array[c-1].x) * (mycount - 14000) / 1000 + point_array[c-1].x;
+        y_des = (point_array[c].y - point_array[c-1].y) * (mycount - 14000) / 1000 + point_array[c-1].y;
+        z_des = (point_array[c].z - point_array[c-1].z) * (mycount - 14000) / 1000 + point_array[c-1].z;
+    } else if (mycount > 17000 && mycount < 18000) { // wait && go up from egg
+        int c = 14;
+        mode_val = point_array[c].mode;
+        x_des = (point_array[c].x - point_array[c-1].x) * (mycount - 17000) / 1000 + point_array[c-1].x;
+        y_des = (point_array[c].y - point_array[c-1].y) * (mycount - 17000) / 1000 + point_array[c-1].y;
+        z_des = (point_array[c].z - point_array[c-1].z) * (mycount - 17000) / 1000 + point_array[c-1].z;
     }
-
 
     /*
      * Calculating omega by getting the time difference between two theta values.
@@ -384,20 +448,30 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
     z_dot_motor = JT_13 * omega1 + JT_23 * omega2 + JT_33 * omega3;
 
     /*
-     * Feedforward Force
+     * Impedance Control in non world frame axis
      *
-     * We will apply a force with the robot in the direction of its Z world direction.
+     * Impedance is the relationship of force and displacement (and its derivatives)
      *
-     * Begin by initializing and defining Kt, which is the robot's torque constant.
+     * Begin by defining a desired frame, N, that you want to apply impedance control on.
+     * Frame N is defined by thetax, thetay, and thetaz, the rotation on world frame, W
+     * Also define the rotational matrix and its transpose
      *
-     * Calculate and add the vector multiplication of tranpose of the Jacobian with [0; 0; force_z / Kt]
-     * to convert from xyz of end effector to join torques.
+     * We will use the rotation matrix coordinate transformation to select frame N as the weak axis.
+     * We can also use the rotation matrix to perform coordinate transformation of Fx, Fy, Fz in N frame
+     * to those of world frame.
+     *
+     * Since it's easier to think about commanding the arm at world x, y, z coordinate point, we will rotate
+     * the errors from World coordinate to the N frame using the rotational matrix again.
      */
 
     // Desired N Frame for Impedance Control
     thetax = 0;
     thetay = 0;
-    thetaz = 0;
+    if (mode_val == 2) {
+        thetaz = PI * 0.33;
+    } else {
+        thetaz = 0;
+    }
 
     // Rotation xyz and its Transpose
     cosz = cos(thetaz);
@@ -457,7 +531,62 @@ void lab(float theta1motor,float theta2motor, float theta3motor, float *tau1, fl
         tau1_temp = JT_11 * Fx + JT_12 * Fy + JT_13 * Fz + JT_31;
         tau2_temp = JT_21 * Fx + JT_22 * Fy + JT_23 * Fz + JT_32;
         tau3_temp = JT_31 * Fx + JT_32 * Fy + JT_33 * Fz + JT_33;
+    } else if (mode_val == 2) { //stiff first angle
+        //Define the positional part for PD control and transform coordinates using rotational matrix
+        p1 = Kpxn * (R11 * (x_des - x_motor) + R12 * (y_des - y_motor) + R13 * (z_des - z_motor));
+        p2 = Kpxn * (R21 * (x_des - x_motor) + R22 * (y_des - y_motor) + R23 * (z_des - z_motor));
+        p3 = Kpzn * (R31 * (x_des - x_motor) + R32 * (y_des - y_motor) + R33 * (z_des - z_motor));
+
+        //Define the derivative part for PD control and transform coordinates using rotational matrix
+        d1 = KDxn * (R11 * (x_dot_des - x_dot_motor) + R12 * (y_dot_des - y_dot_motor) + R13 * (z_dot_des - z_dot_motor));
+        d2 = KDxn * (R21 * (x_dot_des - x_dot_motor) + R22 * (y_dot_des - y_dot_motor) + R23 * (z_dot_des - z_dot_motor));
+        d3 = KDzn * (R31 * (x_dot_des - x_dot_motor) + R32 * (y_dot_des - y_dot_motor) + R33 * (z_dot_des - z_dot_motor));
+
+        //Force in xyz using PD Control and transform from N frame to world frame using rotational matrix
+        Fx = R11 * (p1 + d1) + R21 * (p2 + d2) + R31 * (p3 + d3);
+        Fy = R12 * (p1 + d1) + R22 * (p2 + d2) + R32 * (p3 + d3);
+        Fz = R13 * (p1 + d1) + R23 * (p2 + d2) + R33 * (p3 + d3);
+
+        //Conversion to tau 1, 2, and 3 using jacobian matrix
+        tau1_temp = JT_11 * Fx + JT_12 * Fy + JT_13 * Fz + JT_31;
+        tau2_temp = JT_21 * Fx + JT_22 * Fy + JT_23 * Fz + JT_32;
+        tau3_temp = JT_31 * Fx + JT_32 * Fy + JT_33 * Fz + JT_33;
+    } else if (mode_val == 3) { //Force in Z
+        /*
+         * Feedforward Force
+         *
+         * We will apply a force with the robot in the direction of its Z world direction.
+         *
+         * Begin by initializing and defining Kt, which is the robot's torque constant.
+         *
+         * Calculate and add the vector multiplication of tranpose of the Jacobian with [0; 0; force_z / Kt]
+         * to convert from xyz of end effector to join torques.
+         */
+
+        Fx = Kpx * (x_des - x_motor) + KDx * (x_dot_des - x_dot_motor);
+        Fy = Kpy * (y_des - y_motor) + KDy * (y_dot_des - y_dot_motor);
+        Fz = 0 * (z_des - z_motor) + 0 * (z_dot_des - z_dot_motor);
+
+        //Conversion to tau 1, 2, and 3 using jacobian matrix
+        tau1_temp = JT_11 * Fx + JT_12 * Fy + JT_13 * Fz + JT_31 * (F_ZCmd / Kt);
+        tau2_temp = JT_21 * Fx + JT_22 * Fy + JT_23 * Fz + JT_32 * (F_ZCmd / Kt);
+        tau3_temp = JT_31 * Fx + JT_32 * Fy + JT_33 * Fz + JT_33 * (F_ZCmd / Kt);
     }
+
+    /*
+     * Implement Friction Compensation
+     *
+     * Straight line equations for all three joints were given.
+     *
+     * Viscous friction coefficient is capable of opposing the motion and is proportional to the
+     * rotational velocity of the joint.
+     *
+     * Coulomb friction can be used to calculate the force of dry friction.
+     *
+     * Positive and negative viscous and coulomb values from the equations were tuned for smooth motion.
+     *
+     * Lastly, multiply each friction by a friction multiplication factor to minimize friction effects.
+     */
 
     //theta1 friction compensation
     if (omega1 > 0.1) {
